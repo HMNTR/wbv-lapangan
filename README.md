@@ -45,6 +45,21 @@ Teks informasi ada di `ic_teks.php`. Setiap persetujuan menyimpan sidik versi te
 
 Data IC memuat nama subjek, jadi hanya dapat dibuka oleh Admin, Ketua, dan Peneliti.
 
+## Instalasi dengan Docker (Server / Linux)
+
+1. *(Disarankan)* Salin `.env.example` menjadi `.env`, lalu ubah `APP_PORT`, `DB_PASS`, dan `DB_ROOT_PASS`:
+   ```bash
+   cp .env.example .env
+   ```
+2. Jalankan kontainer (database & `schema.sql` otomatis diinisialisasi saat pertama kali jalan):
+   ```bash
+   docker compose up -d --build
+   ```
+3. Buka `http://<IP-SERVER>:8080` (sesuai `APP_PORT`), masuk sebagai `admin`/`admin123`, lalu segera ganti kata sandi.
+4. Di **Admin → Pengaturan**, sesuaikan batas aman pemeriksaan dan buat akun tim lapangan.
+
+Data database tersimpan di Docker volume `db_data` sehingga tetap aman saat menjalankan `docker compose up -d --build` ulang. Jangan jalankan `docker compose down -v` jika tidak ingin menghapus database.
+
 ## Instalasi baru (XAMPP di Windows)
 
 1. Pasang XAMPP (PHP 8.0 ke atas), lalu jalankan **Apache** dan **MySQL**.

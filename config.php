@@ -3,11 +3,11 @@
 // Pengguna, kata sandi, kompensasi, dan batas aman kini diatur di aplikasi: menu Admin.
 // Nilai di bawah hanya cadangan bila tabel `pengaturan` belum ada.
 return [
-    'db_host' => '127.0.0.1',
-    'db_port' => 3306,
-    'db_name' => 'wbv_lapangan',
-    'db_user' => 'root',
-    'db_pass' => '',            // XAMPP/Laragon default: kosong
+    'db_host' => getenv('DB_HOST') ?: '127.0.0.1',
+    'db_port' => (int)(getenv('DB_PORT') ?: 3306),
+    'db_name' => getenv('DB_NAME') ?: 'wbv_lapangan',
+    'db_user' => getenv('DB_USER') ?: 'root',
+    'db_pass' => getenv('DB_PASS') !== false ? getenv('DB_PASS') : '', // XAMPP/Laragon default: kosong
 
 
     'judul'      => 'Formulir Lapangan Uji WBV — MV3 Komando',

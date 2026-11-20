@@ -1,0 +1,39 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      TZ: Asia/Jakarta
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: wbv_lapangan
+      DB_USER: ${DB_USER:-wbv}
+      DB_PASS: ${DB_PASS:-wbv_secret_ganti}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      TZ: Asia/Jakarta
+      MARIADB_DATABASE: wbv_lapangan
+      MARIADB_USER: ${DB_USER:-wbv}
+      MARIADB_PASSWORD: ${DB_PASS:-wbv_secret_ganti}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASS:-root_secret_ganti}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+
+volumes:
+  db_data:
