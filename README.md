@@ -1,8 +1,35 @@
-# Aplikasi Formulir Lapangan Uji WBV — MV3 Komando (v3)
+# Aplikasi Formulir Lapangan Uji WBV — MV3 Komando (v3.2)
 
 Aplikasi web PHP + MySQL sederhana untuk mengisi, memantau, dan mencetak formulir pengujian WBV di lapangan. Isinya mengikuti paket formulir lapangan 24–25 November 2026 (layak etik KEPK UNPRI No. 077/KEPK/UNPRI/X/2026).
 
 Aplikasi berjalan **offline** di laptop lapangan (XAMPP/Laragon), tanpa pustaka eksternal atau CDN.
+
+## Perubahan v3.2 — revisi waktu rundown
+
+Rundown sudah disesuaikan dengan dokumen revisi:
+- **24 November:**
+  - jeda siang **13.46–13.49** (3 menit);
+  - keterangan menanjak/menurun pagi menjadi **5× naik-turun**.
+- **25 November:**
+
+  | Jam | Kegiatan |
+  |---|---|
+  | 10.25–11.05 | D2 (40 menit) |
+  | 11.05–11.10 | Unduh data |
+  | 11.10–11.50 | D3 |
+  | 11.50–11.55 | Unduh data |
+  | 11.55–12.20 | Evaluasi |
+  | 13.20–13.40 | Persiapan Ronde 2 |
+  | 13.40–15.10 | D4 |
+  | 15.10–15.20 | Unduh data |
+  | 15.20–15.50 | Kejut tunggal |
+  | 15.50–15.55 | Closing |
+
+**Database yang sudah terpasang:** timpa berkas aplikasi, lalu impor `perbaikan_rundown_rev.sql` (aman diimpor ulang).
+- Kunjungan 25 November yang masih kosong otomatis memakai jam baru.
+- Kunjungan yang sudah berisi log tetap memakai rundown lama (template `25L`), sehingga datanya tidak hilang.
+
+**Instalasi baru:** cukup impor `schema.sql`.
 
 ## Peran pengguna (v3)
 
@@ -59,6 +86,13 @@ Data IC memuat nama subjek, jadi hanya dapat dibuka oleh Admin, Ketua, dan Penel
 4. Di **Admin → Pengaturan**, sesuaikan batas aman pemeriksaan dan buat akun tim lapangan.
 
 Data database tersimpan di Docker volume `db_data` sehingga tetap aman saat menjalankan `docker compose up -d --build` ulang. Jangan jalankan `docker compose down -v` jika tidak ingin menghapus database.
+
+**Pembaruan ke v3.2 pada server Docker yang sudah berjalan:**
+```bash
+git pull
+docker compose up -d --build
+docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" wbv_lapangan' < perbaikan_rundown_rev.sql
+```
 
 ## Instalasi baru (XAMPP di Windows)
 

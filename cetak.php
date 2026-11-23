@@ -157,7 +157,7 @@ if ($k) {
     // ======================= F-6 =======================
     foreach (['pagi' => 'f6p', 'siang' => 'f6s'] as $sesi => $kode) {
         if (!in_array($f, [$kode, 'f6', 'all'], true)) continue;
-        $is24 = $k['template_hari'] === '24';
+        $is24 = (bool)row("SELECT 1 FROM rundown WHERE hari=? AND keterangan IS NOT NULL AND keterangan<>'' LIMIT 1", [$k['template_hari']]);
         $rows = rows("SELECT l.*, r.waktu, r.menit, r.kegiatan, r.keterangan, r.tipe, r.id_rekaman, r.jalur_v FROM log_baris l JOIN rundown r ON r.id=l.rundown_id
                       WHERE l.kunjungan_id=? AND r.sesi=? ORDER BY r.urut", [$kid, $sesi]);
         if (!$rows) continue;

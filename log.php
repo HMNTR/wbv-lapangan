@@ -46,7 +46,8 @@ $rows = rows("SELECT l.*, r.waktu, r.menit, r.kegiatan, r.keterangan, r.tipe, r.
               FROM log_baris l JOIN rundown r ON r.id=l.rundown_id
               WHERE l.kunjungan_id=? AND r.sesi=? ORDER BY r.urut", [$kid, $sesi]);
 $henti = rows("SELECT * FROM henti WHERE kunjungan_id=? ORDER BY jam", [$kid]);
-$is24 = $k['template_hari'] === '24';
+// template bergaya rundown tim manekin (kolom Keterangan) vs skenario WBV (kolom Jalur · v)
+$is24 = (bool)row("SELECT 1 FROM rundown WHERE hari=? AND keterangan IS NOT NULL AND keterangan<>'' LIMIT 1", [$k['template_hari']]);
 $kssHigh = array_filter($rows, fn($r) => $r['kss'] !== null && (int)$r['kss'] >= 7);
 
 page_head('F-6 Log Mengemudi — ' . ($sesi === 'pagi' ? 'Pagi' : 'Siang'), $k);

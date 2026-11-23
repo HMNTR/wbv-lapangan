@@ -5,7 +5,7 @@ session_start();
 date_default_timezone_set('Asia/Jakarta');
 
 $CFG = require __DIR__ . '/config.php';
-const APP_VERSI = '3.0';
+const APP_VERSI = '3.2';
 const PERAN = ['admin' => 'Admin', 'ketua' => 'Ketua Penelitian', 'peneliti' => 'Peneliti', 'bangprod' => 'Pendamping Pindad (Bangprod)', 'qa' => 'Pendamping QA'];
 const EDITOR = ['admin', 'ketua', 'peneliti'];          // boleh mengisi/mengubah formulir
 // Slot persetujuan elektronik per formulir (urutan = urutan kolom tanda tangan saat dicetak)

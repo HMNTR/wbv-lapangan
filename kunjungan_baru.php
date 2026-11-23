@@ -4,7 +4,9 @@ require_editor();
 csrf_check();
 
 $subjek = rows("SELECT id, kode FROM subjek ORDER BY kode");
-$TEMPLATE = ['24' => 'Skenario tim manekin (U1–U7)', '25' => 'Skenario WBV (D1–D4)'];
+$LABEL = ['24' => 'Skenario tim manekin (U1–U7)', '25' => 'Skenario WBV (D1–D4)', '21' => 'Simulasi — salinan rundown 24 (tim manekin)', '25L' => 'Skenario WBV versi lama (sebelum revisi rundown)'];
+$TEMPLATE = [];
+foreach (rows("SELECT DISTINCT hari FROM rundown ORDER BY hari") as $r) $TEMPLATE[$r['hari']] = $LABEL[$r['hari']] ?? ('Template ' . $r['hari']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sid = (int)post('subjek_id'); $tpl = (string)post('template_hari');
@@ -29,7 +31,7 @@ if (!$subjek) { echo "<div class='alert warn'>Belum ada subjek. <a href='subjek.
     <div><label class="f">Subjek</label><select name="subjek_id"><?php foreach ($subjek as $s) echo "<option value='{$s['id']}'>" . h($s['kode']) . "</option>"; ?></select></div>
     <div><label class="f">Tanggal</label><input type="date" name="tanggal" value="2026-11-24" required></div>
     <div><label class="f">Template rundown</label>
-      <select name="template_hari"><option value="24">24 Nov — skenario tim manekin</option><option value="25">25 Nov — skenario WBV (D1–D4)</option></select></div>
+      <select name="template_hari"><?php foreach ($TEMPLATE as $h => $l) echo "<option value='" . h($h) . "'" . ($h === '24' ? ' selected' : '') . ">" . h($h) . " — " . h($l) . "</option>"; ?></select></div>
     <div><label class="f">No. kendaraan MV3 Komando</label><input type="text" name="no_kendaraan"></div>
   </div>
   <p><button class="btn">Buat kunjungan</button></p>
