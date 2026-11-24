@@ -6,7 +6,7 @@ require_editor();
 $jenis = $_GET['j'] ?? '';
 $SQL = [
     'log' => ["log_mengemudi", "SELECT s.kode, k.ke kunjungan, k.tanggal, r.sesi, r.urut, r.waktu waktu_rundown, r.menit, r.kegiatan, r.keterangan, r.jalur_v, r.tipe,
-                 REPLACE(r.id_rekaman,'{SUBJ}',s.kode) id_rekaman, l.jam_mulai, l.jam_selesai, l.kss, l.v_aktual, l.pass, l.kode_obs, l.catatan
+                 REPLACE(r.id_rekaman,'{SUBJ}',s.kode) id_rekaman, l.jadwal_mulai, l.jadwal_selesai, l.menit_jadwal, l.jam_mulai, l.jam_selesai, l.kss, l.v_aktual, l.pass, l.kode_obs, l.catatan
               FROM log_baris l JOIN rundown r ON r.id=l.rundown_id JOIN kunjungan k ON k.id=l.kunjungan_id JOIN subjek s ON s.id=k.subjek_id
               ORDER BY s.kode, k.ke, r.sesi='siang', r.urut"],
     'kss' => ["kss_timeline", "SELECT s.kode, k.tanggal, r.sesi, r.waktu waktu_rundown, l.jam_mulai jam_aktual, l.kss, REPLACE(r.id_rekaman,'{SUBJ}',s.kode) id_rekaman
@@ -18,6 +18,7 @@ $SQL = [
     'subjek' => ["subjek_demografis", "SELECT * FROM subjek ORDER BY kode"],
 ];
 
+jw_pastikan_kolom();
 if (isset($SQL[$jenis])) {
     [$nama, $sql] = $SQL[$jenis];
     audit('ekspor CSV', $nama);

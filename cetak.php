@@ -158,15 +158,16 @@ if ($k) {
     foreach (['pagi' => 'f6p', 'siang' => 'f6s'] as $sesi => $kode) {
         if (!in_array($f, [$kode, 'f6', 'all'], true)) continue;
         $is24 = (bool)row("SELECT 1 FROM rundown WHERE hari=? AND keterangan IS NOT NULL AND keterangan<>'' LIMIT 1", [$k['template_hari']]);
+        jw_pastikan_kolom();
         $rows = rows("SELECT l.*, r.waktu, r.menit, r.kegiatan, r.keterangan, r.tipe, r.id_rekaman, r.jalur_v FROM log_baris l JOIN rundown r ON r.id=l.rundown_id
                       WHERE l.kunjungan_id=? AND r.sesi=? ORDER BY r.urut", [$kid, $sesi]);
         if (!$rows) continue;
         kop('F-6', 'LOG MENGEMUDI — ' . strtoupper($sesi), $is24 ? 'Jam sesuai rundown tim manekin; KSS ditanyakan di setiap jeda (baris abu biru)' : 'Jam sesuai rundown skenario WBV; KSS lisan tiap 10 menit', $k, $s);
         echo "<table class='id'><tr><th>Cuaca</th><td>" . $v($k['cuaca']) . "</td><th>Lintasan</th><td>" . $v($k['lintasan']) . "</td><th>Uji ketuk</th><td>" . ($k['uji_ketuk'] ? '☒ OK' : '☐') . "</td><th>Diam 30″ awal/akhir</th><td>" . $v(jam($k['diam_awal_jam'])) . " / " . $v(jam($k['diam_akhir_jam'])) . "</td></tr></table>";
-        echo "<table class='isi log'><tr><th>Waktu (rundown)</th><th>Mnt</th><th>Kegiatan</th><th>" . ($is24 ? 'Keterangan' : 'Jalur · v') . "</th><th>ID rekaman</th><th>Mulai</th><th>Selesai</th><th>KSS</th><th>v aktual" . ($is24 ? '' : ' / pass') . "</th><th>Kode</th><th>Catatan</th></tr>";
+        echo "<table class='isi log'><tr><th>Waktu (jadwal)</th><th>Mnt</th><th>Kegiatan</th><th>" . ($is24 ? 'Keterangan' : 'Jalur · v') . "</th><th>ID rekaman</th><th>Mulai</th><th>Selesai</th><th>KSS</th><th>v aktual" . ($is24 ? '' : ' / pass') . "</th><th>Kode</th><th>Catatan</th></tr>";
         foreach ($rows as $r) {
             $hi = $r['kss'] !== null && (int)$r['kss'] >= 7;
-            echo "<tr class='t-{$r['tipe']}" . ($hi ? ' hi' : '') . "'><td>" . h($r['waktu']) . "</td><td>" . h($r['menit']) . "</td><td>" . h($r['kegiatan']) . "</td><td>" . h($is24 ? $r['keterangan'] : $r['jalur_v']) . "</td><td>" . h(str_replace('{SUBJ}', $s['kode'], (string)$r['id_rekaman'])) . "</td><td>" . h(jam($r['jam_mulai'])) . "</td><td>" . h(jam($r['jam_selesai'])) . "</td><td class='c'><b>" . h($r['kss']) . "</b></td><td>" . h(trim($r['v_aktual'] . ($r['pass'] ? ' / ' . $r['pass'] : ''))) . "</td><td>" . h($r['kode_obs']) . "</td><td>" . h($r['catatan']) . "</td></tr>";
+            echo "<tr class='t-{$r['tipe']}" . ($hi ? ' hi' : '') . "'><td>" . h(jw_label($r)) . "</td><td>" . h($r['menit_jadwal'] ?? $r['menit']) . "</td><td>" . h($r['kegiatan']) . "</td><td>" . h($is24 ? $r['keterangan'] : $r['jalur_v']) . "</td><td>" . h(str_replace('{SUBJ}', $s['kode'], (string)$r['id_rekaman'])) . "</td><td>" . h(jam($r['jam_mulai'])) . "</td><td>" . h(jam($r['jam_selesai'])) . "</td><td class='c'><b>" . h($r['kss']) . "</b></td><td>" . h(trim($r['v_aktual'] . ($r['pass'] ? ' / ' . $r['pass'] : ''))) . "</td><td>" . h($r['kode_obs']) . "</td><td>" . h($r['catatan']) . "</td></tr>";
         }
         echo "</table><p class='kecil'>Kode: Y menguap · K kedip lama/mata terpejam · A kepala terangguk · L penyimpangan lajur · S gangguan sensor · T keluhan tubuh. Baris merah = KSS ≥ 7.</p>";
         $henti = rows("SELECT * FROM henti WHERE kunjungan_id=? ORDER BY jam", [$kid]);

@@ -1,8 +1,31 @@
-# Aplikasi Formulir Lapangan Uji WBV — MV3 Komando (v3.2)
+# Aplikasi Formulir Lapangan Uji WBV — MV3 Komando (v3.3)
 
 Aplikasi web PHP + MySQL sederhana untuk mengisi, memantau, dan mencetak formulir pengujian WBV di lapangan. Isinya mengikuti paket formulir lapangan 24–25 November 2026 (layak etik KEPK UNPRI No. 077/KEPK/UNPRI/X/2026).
 
 Aplikasi berjalan **offline** di laptop lapangan (XAMPP/Laragon), tanpa pustaka eksternal atau CDN.
+
+## Perubahan v3.3 — jadwal dinamis (geser otomatis mengikuti durasi)
+
+Gunakan fitur ini bila di lapangan jadwal mundur/maju atau durasi suatu kegiatan berubah.
+
+Di halaman **F-6 Pagi/Siang**, klik **⏱ Atur / geser jadwal**, lalu:
+1. Pilih **baris** tempat pergeseran dimulai.
+2. Isi **jam mulai baru**, atau **geser ± menit**. Tombol *pakai jam aktual* mengambil jam ⏱ yang sudah tercatat di log.
+3. Bila perlu, ubah **durasi** baris mana pun (misalnya D4 dari 90 menjadi 60 menit).
+4. Klik **Pratinjau** untuk melihat hasilnya, lalu **Simpan jadwal baru**.
+
+Cara aplikasi menghitung jadwal:
+- Baris sesudahnya dihitung otomatis: jam mulai = jam selesai baris sebelumnya, jam selesai = jam mulai + durasi.
+- Titik KSS 10-menitan di dalam skenario ikut bergeser. Titik yang melewati durasi baru ditandai *di luar durasi*.
+
+Pemberitahuan dan data yang tersimpan:
+- Bila jam mulai aktual (⏱) meleset ≥ 3 menit dari jadwal, halaman log menawarkan tombol **Geser jadwal berikutnya mengikuti jam ini**.
+- Rundown asli tidak berubah. Jadwal baru hanya berlaku untuk kunjungan itu.
+- Jadwal baru tampil di log, cetakan, dan ekspor CSV (kolom `jadwal_mulai`, `jadwal_selesai`, `menit_jadwal`).
+- Tombol **Kembalikan ke rundown asli** membatalkan pergeseran.
+- Setiap pergeseran tercatat di jejak aktivitas.
+
+**Pembaruan:** cukup timpa berkas aplikasi. Kolom database ditambahkan otomatis saat halaman log dibuka. Kalau tidak bisa (hak akses database terbatas), impor `migrasi_v3_ke_v3_3.sql`.
 
 ## Perubahan v3.2 — revisi waktu rundown
 
@@ -87,11 +110,14 @@ Data IC memuat nama subjek, jadi hanya dapat dibuka oleh Admin, Ketua, dan Penel
 
 Data database tersimpan di Docker volume `db_data` sehingga tetap aman saat menjalankan `docker compose up -d --build` ulang. Jangan jalankan `docker compose down -v` jika tidak ingin menghapus database.
 
-**Pembaruan ke v3.2 pada server Docker yang sudah berjalan:**
+**Pembaruan ke v3.3 pada server Docker yang sudah berjalan:**
 ```bash
 git pull
 docker compose up -d --build
+# Jika sebelumnya belum menjalankan revisi rundown v3.2:
 docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" wbv_lapangan' < perbaikan_rundown_rev.sql
+# Opsional (otomatis ditambahkan aplikasi saat halaman log dibuka):
+docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" wbv_lapangan' < migrasi_v3_ke_v3_3.sql
 ```
 
 ## Instalasi baru (XAMPP di Windows)

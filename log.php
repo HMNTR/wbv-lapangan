@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect("log.php?k=$kid&sesi=$sesi");
 }
 
+jw_pastikan_kolom();
 $rows = rows("SELECT l.*, r.waktu, r.menit, r.kegiatan, r.keterangan, r.tipe, r.id_rekaman, r.jalur_v
               FROM log_baris l JOIN rundown r ON r.id=l.rundown_id
               WHERE l.kunjungan_id=? AND r.sesi=? ORDER BY r.urut", [$kid, $sesi]);
@@ -54,6 +55,18 @@ page_head('F-6 Log Mengemudi — ' . ($sesi === 'pagi' ? 'Pagi' : 'Siang'), $k);
 ?>
 <p class="muted"><?= $is24 ? 'Jam sesuai rundown tim manekin 24 November. KSS ditanyakan lisan di setiap jeda (baris biru).' : 'Jam sesuai rundown skenario WBV 25 November. KSS lisan tiap 10 menit tanpa berhenti; baris biru = KSS saat jeda.' ?>
  Kode pengamatan: <?php foreach (OBS as $c => $l) echo "<b>$c</b> $l · "; ?></p>
+<?php
+// saran geser jadwal: baris terakhir yang jam mulai aktualnya meleset >= 3 menit dari jadwal
+$saran = null;
+foreach ($rows as $r) {
+    if (!$r['jam_mulai'] || jw_jenis($r) === 'titik') continue;
+    $jdw = jw_mulai_sekarang($r); $akt = jw_dbmin($r['jam_mulai']);
+    if ($jdw !== null && abs($akt - $jdw) >= 3) $saran = [$r, $akt - $jdw, $akt]; elseif ($jdw !== null) $saran = null;
+}
+?>
+<p><?php if (can_edit()): ?><a class="btn sm" href="jadwal.php?k=<?= $kid ?>&sesi=<?= $sesi ?>">⏱ Atur / geser jadwal</a><?php endif; ?>
+<?php if (array_filter($rows, fn($r) => !empty($r['jadwal_mulai']))): ?> <span class="pill warn">jadwal sesi ini sudah digeser dari rundown asli</span><?php endif; ?></p>
+<?php if ($saran && can_edit()): ?><div class="alert warn">Jam mulai aktual <b><?= h($saran[0]['kegiatan'] ?: $saran[0]['waktu']) ?></b> = <?= h(jw_fmt($saran[2])) ?>, selisih <?= ($saran[1] > 0 ? '+' : '') . $saran[1] ?> menit dari jadwal. <a class="btn sm" href="jadwal.php?k=<?= $kid ?>&sesi=<?= $sesi ?>&anchor=<?= (int)$saran[0]['id'] ?>&jam=<?= h(str_replace('.', ':', jw_fmt($saran[2]))) ?>">Geser jadwal berikutnya mengikuti jam ini</a></div><?php endif; ?>
 <?php if ($kssHigh): ?><div class="alert bad">KSS ≥ 7 tercatat pada <?= count($kssHigh) ?> baris. Kendaraan harus dihentikan dan dicatat di "Penghentian lebih awal".</div><?php endif; ?>
 <?php if (!$rows): ?><div class="alert warn">Tidak ada baris rundown untuk sesi ini.</div><?php endif; ?>
 
@@ -61,13 +74,13 @@ page_head('F-6 Log Mengemudi — ' . ($sesi === 'pagi' ? 'Pagi' : 'Siang'), $k);
   <?= csrf_field() ?>
   <fieldset <?= can_edit() ? '' : 'disabled' ?>>
   <div class="tbl-wrap"><table class="log">
-    <tr><th>Waktu (rundown)</th><th>Menit</th><th>Kegiatan</th><th><?= $is24 ? 'Keterangan' : 'Jalur · v' ?></th><th>ID rekaman WBV</th>
+    <tr><th>Waktu (jadwal)</th><th>Menit</th><th>Kegiatan</th><th><?= $is24 ? 'Keterangan' : 'Jalur · v' ?></th><th>ID rekaman WBV</th>
         <th>Jam mulai</th><th>Jam selesai</th><th>KSS</th><th><?= $is24 ? 'v aktual' : 'v aktual / pass' ?></th><th>Kode</th><th>Catatan</th></tr>
     <?php foreach ($rows as $r): $lid = (int)$r['id']; $nm = "b[$lid]";
       $idr = str_replace('{SUBJ}', $k['kode'], (string)$r['id_rekaman']);
       $cls = 't-' . $r['tipe'] . (($r['kss'] !== null && (int)$r['kss'] >= 7) ? ' kss-high' : ''); ?>
     <tr class="<?= $cls ?>">
-      <td><?= h($r['waktu']) ?></td><td><?= h($r['menit']) ?></td><td><?= h($r['kegiatan']) ?></td>
+      <td><?= jw_berubah($r) ? '<b>' . h(jw_label($r)) . '</b><br><s class="muted">' . h($r['waktu']) . '</s>' : h(jw_label($r)) ?></td><td><?= h($r['menit_jadwal'] ?? $r['menit']) ?></td><td><?= h($r['kegiatan']) ?></td>
       <td><?= h($is24 ? $r['keterangan'] : $r['jalur_v']) ?></td><td class="muted"><?= h($idr) ?></td>
       <td class="tm"><input type="time" name="<?= $nm ?>[mulai]" value="<?= h(substr((string)$r['jam_mulai'], 0, 5)) ?>"><button type="button" class="btn sm sec now" data-now="<?= $nm ?>[mulai]">⏱</button></td>
       <td class="tm"><input type="time" name="<?= $nm ?>[selesai]" value="<?= h(substr((string)$r['jam_selesai'], 0, 5)) ?>"><button type="button" class="btn sm sec now" data-now="<?= $nm ?>[selesai]">⏱</button></td>

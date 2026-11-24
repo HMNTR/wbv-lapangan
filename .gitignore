@@ -1,2 +1,6 @@
 .env
+cadangan_*.sql
+*.csv
+backup*/
+_tmp*
 .DS_Store
